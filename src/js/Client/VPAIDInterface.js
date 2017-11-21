@@ -1,40 +1,11 @@
 import PubSub from 'pubsub-js';
 
 export default class VPAIDInterface {
-  constructor(globalWindow = window) {
-    globalWindow.getVPAID = () => this.getPublicInterface();
+  constructor() {
     this.adVolume = 0;
     this.paused = false;
     this.expanded = false;
     this.size = { width: 640, height: 360 };
-  }
-
-  getPublicInterface() {
-    return {
-      initAd: this.initAd,
-      collapseAd: this.collapseAd,
-      expandAd: this.expandAd,
-      pauseAd: this.pauseAd,
-      resizeAd: this.resizeAd,
-      resumeAd: this.resumeAd,
-      startAd: this.startAd,
-      skipAd: this.skipAd,
-      stopAd: this.stopAd,
-      subscribe: this.subscribe,
-      unsubscribe: this.unsubscribe,
-      getAdExpanded: () => this.expanded,
-      getAdLinear: () => true,
-      getAdDuration: () => -2,
-      getAdRemainingTime: () => -2,
-      getAdSkippableState: () => true,
-      getAdVolume: () => this.adVolume,
-      getAdCompanions: () => '',
-      getAdIcons: () => true,
-      getAdHeight: () => this.size.height,
-      getAdWidth: () => this.size.width,
-      handshakeVersion: () => '2.0',
-      setAdVolume: vol => this.adVolume = vol,
-    }
   }
 
   initAd(width, height, viewMode, desiredBitrate, creativeData = {}, environmentVars = {}) {
@@ -45,12 +16,15 @@ export default class VPAIDInterface {
     this.environmentVars = { ...environmentVars };
 
     this.publish('AdLoaded');
+    this.publish('AdDurationChange');
     return this;
   }
 
   startAd() {
     this.paused = false;
+    this.publish('AdImpression');
     this.publish('AdStarted');
+    this.publish('AdVideoStart');
     return this;
   }
 
@@ -97,6 +71,7 @@ export default class VPAIDInterface {
   }
 
   subscribe(fn, event, listenerScope) {
+    console.log('subscribing', event, fn);
     PubSub.subscribe(event, fn.bind(listenerScope));
     return this;
   }
@@ -107,7 +82,58 @@ export default class VPAIDInterface {
   }
 
   publish(event, args) {
+    console.log('publishing', event);
     PubSub.publish(event, args);
     return this;
+  }
+
+  getAdExpanded() {
+    return this.expanded; 
+  }
+
+  getAdLinear() {
+    return true; 
+  }
+
+  getAdDuration() {
+    console.log('getAdDuration');
+    return -2;
+  }
+
+  getAdRemainingTime() { 
+    console.log('getAdRemainingTime');
+    return -2; 
+  }
+
+  getAdSkippableState() {
+    return true;
+  }
+
+  getAdVolume() {
+   return this.adVolume;
+  }
+
+  getAdCompanions() { 
+    return '';
+  }
+
+  getAdIcons() {
+   return true;
+  }
+
+  getAdHeight() { 
+    return this.size.height;
+  }
+
+  getAdWidth() { 
+    return this.size.width;
+  }
+
+  handshakeVersion() {
+    return '2.0';
+  }
+
+  setAdVolume(vol) {
+    this.adVolume = vol;
   }
 }

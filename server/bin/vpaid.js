@@ -78,6 +78,40 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 var instance = new _Client2.default(window);
 
+// const config = {
+//   overrides: {
+//     startAd: {
+//       operations: [
+//         { dispatch: 'AdStarted', delay: 1000 }
+//       ],
+//       delay: 1000
+//     },
+//     getAdRemainingTime: {
+//       operations: [
+//         { ret: 13, delay: 2000 },
+//         { ret: 11, delay: 2000 },
+//         { ret: 9, delay: 2000 },
+//         { ret: 7, delay: 2000 },
+//         { ret: 5, delay: 2000 },
+//         { ret: 3, delay: 2000 },
+//         { ret: 1, delay: 2000 },
+//       ]
+//     }
+//   }
+// };
+
+
+// instance
+//   .subscribe(() => console.log('AdLoaded'), 'AdLoaded')
+//   .subscribe(() => console.log('AdStarted'), 'AdStarted')
+//   .initAd(640, 480, 'normal', 0, JSON.stringify(config), {})
+//   .startAd();
+
+// for(let i = 0; i < 5; i++) {
+//   let remaining = instance.getAdRemainingTime();
+//   console.log('remaining', remaining, new Date());
+// }
+
 /***/ }),
 /* 1 */
 /***/ (function(module, exports, __webpack_require__) {
@@ -97,11 +131,7 @@ var _VPAIDInterface2 = __webpack_require__(2);
 
 var _VPAIDInterface3 = _interopRequireDefault(_VPAIDInterface2);
 
-var _Display = __webpack_require__(4);
-
-var _Display2 = _interopRequireDefault(_Display);
-
-var _Decorator = __webpack_require__(5);
+var _Decorator = __webpack_require__(4);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -119,7 +149,9 @@ var Client = function (_VPAIDInterface) {
 
     var _this = _possibleConstructorReturn(this, (Client.__proto__ || Object.getPrototypeOf(Client)).call(this, props));
 
+    console.log('Client created', _this);
     window.getVPAIDAd = function () {
+      console.log('VPAID accessed', _this);
       return _this;
     };
     return _this;
@@ -133,8 +165,6 @@ var Client = function (_VPAIDInterface) {
 
       console.log('calling initAd', arguments);
       this.applyOverrides(creativeData);
-      this.display = new _Display2.default(environmentVars.slot);
-
       return _get(Client.prototype.__proto__ || Object.getPrototypeOf(Client.prototype), 'initAd', this).call(this, width, height, viewMode, desiredBitrate, creativeData, environmentVars);
     }
   }, {
@@ -144,10 +174,7 @@ var Client = function (_VPAIDInterface) {
 
       try {
         var parsed = JSON.parse(AdParameters);
-
-        if (parsed && parsed.overrides) {
-          (0, _Decorator.augment)(this, parsed.overrides);
-        }
+        (0, _Decorator.augment)(this, parsed.overrides);
       } catch (e) {
         console.error(e);
       }
@@ -205,16 +232,13 @@ var VPAIDInterface = function () {
       this.environmentVars = _extends({}, environmentVars);
 
       this.publish('AdLoaded');
-      this.publish('AdDurationChange');
       return this;
     }
   }, {
     key: 'startAd',
     value: function startAd() {
       this.paused = false;
-      this.publish('AdImpression');
       this.publish('AdStarted');
-      this.publish('AdVideoStart');
       return this;
     }
   }, {
@@ -269,7 +293,6 @@ var VPAIDInterface = function () {
   }, {
     key: 'subscribe',
     value: function subscribe(fn, event, listenerScope) {
-      console.log('subscribing', event, fn);
       _pubsubJs2.default.subscribe(event, fn.bind(listenerScope));
       return this;
     }
@@ -282,7 +305,6 @@ var VPAIDInterface = function () {
   }, {
     key: 'publish',
     value: function publish(event, args) {
-      console.log('publishing', event);
       _pubsubJs2.default.publish(event, args);
       return this;
     }
@@ -299,13 +321,11 @@ var VPAIDInterface = function () {
   }, {
     key: 'getAdDuration',
     value: function getAdDuration() {
-      console.log('getAdDuration');
       return -2;
     }
   }, {
     key: 'getAdRemainingTime',
     value: function getAdRemainingTime() {
-      console.log('getAdRemainingTime');
       return -2;
     }
   }, {
@@ -630,41 +650,29 @@ https://github.com/mroderick/PubSubJS
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.augment = undefined;
 
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
 
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+var _Handlers = __webpack_require__(5);
 
-var Display = function () {
-  function Display(container) {
-    _classCallCheck(this, Display);
+var _Queues = __webpack_require__(7);
 
-    this.el = this.initEl();
-    container.appendChild(this.el);
-  }
+var augment = exports.augment = function augment(subject, overrides) {
+  Object.entries(overrides).forEach(function (_ref) {
+    var _ref2 = _slicedToArray(_ref, 2),
+        key = _ref2[0],
+        value = _ref2[1];
 
-  _createClass(Display, [{
-    key: 'initEl',
-    value: function initEl() {
-      var el = document.createElement('div');
-      el.style.width = '100%';
-      el.style.height = '100%';
-      el.style.backgroundColor = 'green';
-      el.style.fontFamily = 'sans-serif';
-      el.style.color = 'white';
-      el.innerHTML = 'Programmable VPAID Creative';
+    var defaultFn = subject[key];
 
-      return el;
-    }
-  }, {
-    key: 'draw',
-    value: function draw() {}
-  }]);
-
-  return Display;
-}();
-
-exports.default = Display;
+    var operations = value.operations.map(function (op) {
+      return _Handlers.overrideHandler.bind({}, op, subject.publish);
+    });
+    var queue = new _Queues.LoopableQueue(operations);
+    subject[key] = queue.run.bind(queue);
+  });
+};
 
 /***/ }),
 /* 5 */
@@ -676,68 +684,25 @@ exports.default = Display;
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.augment = undefined;
-
-var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
-
-var _Handlers = __webpack_require__(6);
-
-var _Queues = __webpack_require__(8);
-
-var augment = exports.augment = function augment(subject, overrides) {
-  Object.entries(overrides).forEach(function (_ref) {
-    var _ref2 = _slicedToArray(_ref, 2),
-        key = _ref2[0],
-        value = _ref2[1];
-
-    var defaultFn = subject[key];
-
-    var operations = value.operations.reduce(function (accum, op) {
-      var repeat = typeof op.repeat === 'undefined' ? 1 : op.repeat;
-
-      for (var i = 0; i < repeat; i++) {
-        accum.push(_Handlers.overrideHandler.bind({}, op, subject.publish));
-      }
-
-      return accum;
-    }, []);
-
-    var queue = new _Queues.LoopableQueue(operations);
-    subject[key] = queue.run.bind(queue);
-  });
-};
-
-/***/ }),
-/* 6 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
 exports.overrideHandler = undefined;
 
-var _Timing = __webpack_require__(7);
+var _Timing = __webpack_require__(6);
 
 var overrideHandler = exports.overrideHandler = function overrideHandler(operation, publisher) {
   if (typeof operation.ret !== 'undefined') {
     if (operation.delay) {
       (0, _Timing.syncDelay)(operation.delay);
     }
-    console.log('returning', operation.ret);
     return operation.ret;
   } else if (operation.dispatch) {
     setTimeout(function () {
-      console.log('queuing', operation.dispatch);
       publisher(operation.dispatch);
     }, operation.delay || 0);
   }
 };
 
 /***/ }),
-/* 7 */
+/* 6 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -756,7 +721,7 @@ var syncDelay = exports.syncDelay = function syncDelay(delay) {
 };
 
 /***/ }),
-/* 8 */
+/* 7 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";

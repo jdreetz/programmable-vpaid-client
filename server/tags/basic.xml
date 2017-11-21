@@ -1,0 +1,42 @@
+<VAST version="2.0">
+  <Ad id="preroll-1">
+    <InLine>
+    <AdSystem>2.0</AdSystem>
+    <AdTitle>5748406</AdTitle>
+    <Creatives>
+      <Creative>
+        <Linear>
+          <Duration>00:00:30</Duration>
+          <TrackingEvents></TrackingEvents>
+          <AdParameters>
+            <![CDATA[
+              {
+                "overrides": {
+                  "getAdDuration": {
+                    "operations": [
+                      { "ret": 15, "delay": 0 },
+                      { "dispatch": "AdStopped", "delay": 15000 }
+                    ]
+                  },
+                  "getAdRemainingTime": {
+                    "operations": [
+                      { "ret": 12, "repeat": 20 },
+                      { "ret": 5, "repeat": 20 },
+                      { "ret": 1, "repeat": 20}
+                    ]
+                  }
+                }
+              }
+            ]]>
+            </AdParameters>
+          <MediaFiles>
+            <MediaFile apiFramework="VPAID" width="640" height="360" type="application/javascript" delivery="progressive">
+              <![CDATA[https://localhost:8443/bin/app.bundle.js]]>
+            </MediaFile>
+          </MediaFiles>
+        </Linear>
+      </Creative>
+    </Creatives>
+    </InLine>
+  </Ad>
+</VAST>
